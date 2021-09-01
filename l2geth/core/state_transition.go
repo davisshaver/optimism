@@ -27,6 +27,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/ethereum/go-ethereum/rollup/fees"
 	"github.com/ethereum/go-ethereum/rollup/rcfg"
 )
 
@@ -61,6 +62,8 @@ type StateTransition struct {
 	data       []byte
 	state      vm.StateDB
 	evm        *vm.EVM
+	// UsingOVM
+	l1Fee *big.Int
 }
 
 // Message represents a message sent to a contract.
@@ -122,6 +125,13 @@ func IntrinsicGas(data []byte, contractCreation, isHomestead bool, isEIP2028 boo
 
 // NewStateTransition initialises and returns a new state transition object.
 func NewStateTransition(evm *vm.EVM, msg Message, gp *GasPool) *StateTransition {
+	var l1Fee *big.Int
+	if rcfg.UsingOVM {
+		// Compute the L1 fee before the state transition
+		// so it only has to be read from state one time.
+		l1Fee, _ = fees.CalculateL1MsgFee(msg, evm.StateDB)
+	}
+
 	return &StateTransition{
 		gp:       gp,
 		evm:      evm,
@@ -130,6 +140,7 @@ func NewStateTransition(evm *vm.EVM, msg Message, gp *GasPool) *StateTransition 
 		value:    msg.Value(),
 		data:     msg.Data(),
 		state:    evm.StateDB,
+		l1Fee:    l1Fee,
 	}
 }
 
@@ -173,6 +184,15 @@ func (st *StateTransition) buyGas() error {
 
 	st.initialGas = st.msg.Gas()
 	st.state.SubBalance(st.msg.From(), mgval)
+
+	if rcfg.UsingOVM {
+		// Subtract the L1 portion of the fee from the user balance
+		// before the state transition.
+		if st.state.GetBalance(st.msg.From()).Cmp(st.l1Fee) < 0 {
+			return errInsufficientBalanceForGas
+		}
+		st.state.SubBalance(st.msg.From(), st.l1Fee)
+	}
 	return nil
 }
 
@@ -243,7 +263,15 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 		}
 	}
 	st.refundGas()
-	st.state.AddBalance(evm.Coinbase, new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), st.gasPrice))
+	if rcfg.UsingOVM {
+		fee, err := fees.CalculateMsgFee(st.msg, st.state, new(big.Int).SetUint64(st.gasUsed()))
+		if err != nil {
+			return nil, 0, false, err
+		}
+		st.state.AddBalance(evm.Coinbase, fee)
+	} else {
+		st.state.AddBalance(evm.Coinbase, new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), st.gasPrice))
+	}
 
 	return ret, st.gasUsed(), vmerr != nil, err
 }

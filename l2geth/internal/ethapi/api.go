@@ -66,9 +66,13 @@ func NewPublicEthereumAPI(b Backend) *PublicEthereumAPI {
 	return &PublicEthereumAPI{b}
 }
 
-// GasPrice always returns 1 gwei. See `DoEstimateGas` below for context.
+// GasPrice returns the L2 gas price in the OVM_GasPriceOracle
 func (s *PublicEthereumAPI) GasPrice(ctx context.Context) (*hexutil.Big, error) {
-	return (*hexutil.Big)(bigDefaultGasPrice), nil
+	gasPrice, err := s.b.SuggestL2GasPrice(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return (*hexutil.Big)(gasPrice), nil
 }
 
 // ProtocolVersion returns the current Ethereum protocol version this node supports
