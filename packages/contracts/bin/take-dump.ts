@@ -17,7 +17,6 @@ import { makeStateDump } from '../src/make-dump'
     },
     gasPriceOracleConfig: {
       owner: process.env.GAS_PRICE_ORACLE_OWNER,
-      initialGasPrice: 0,
     },
     l1StandardBridgeAddress: process.env.L1_STANDARD_BRIDGE_ADDRESS,
     l1FeeWalletAddress: process.env.L1_FEE_WALLET_ADDRESS,

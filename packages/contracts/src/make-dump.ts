@@ -16,7 +16,6 @@ export interface RollupDeployConfig {
   }
   gasPriceOracleConfig: {
     owner: string | Signer
-    initialGasPrice: number
   }
   l1StandardBridgeAddress: string
   l1FeeWalletAddress: string
@@ -39,7 +38,6 @@ export const makeStateDump = async (cfg: RollupDeployConfig): Promise<any> => {
     },
     OVM_GasPriceOracle: {
       _owner: cfg.gasPriceOracleConfig.owner,
-      gasPrice: cfg.gasPriceOracleConfig.initialGasPrice,
     },
     OVM_L2StandardBridge: {
       l1TokenBridge: cfg.l1StandardBridgeAddress,
