@@ -8,7 +8,7 @@ import { remove0x } from './common'
 const feeScalar = 10_000_000
 const txDataZeroGas = 4
 const txDataNonZeroGasEIP2028 = 16
-const overhead = 4200 + 200 * txDataNonZeroGasEIP2028
+const OVERHEAD = 4200 + 200 * txDataNonZeroGasEIP2028
 const tenThousand = BigNumber.from(10_000)
 export const TxGasPrice = BigNumber.from(feeScalar + feeScalar / 2)
 export interface EncodableL2GasLimit {
@@ -71,11 +71,16 @@ export const ceilmod = (a: BigNumber | number, b: BigNumber | number) => {
 }
 
 export const calculateL1GasLimit = (data: string | Buffer): BigNumber => {
+  const cost = calculateL1Cost(data, OVERHEAD)
+  const gasLimit = cost.add(OVERHEAD)
+  return BigNumber.from(gasLimit)
+}
+
+export const calculateL1Cost = (data: string | Buffer, overhead: number | BigNumber): BigNumber => {
   const [zeroes, ones] = zeroesAndOnes(data)
   const zeroesCost = zeroes * txDataZeroGas
   const onesCost = ones * txDataNonZeroGasEIP2028
-  const gasLimit = zeroesCost + onesCost + overhead
-  return BigNumber.from(gasLimit)
+  return BigNumber.from(onesCost).add(zeroesCost).add(overhead)
 }
 
 export const zeroesAndOnes = (data: Buffer | string): Array<number> => {
