@@ -8,7 +8,7 @@ import { iOVM_L1ERC20Bridge } from "../../L1/messaging/iOVM_L1ERC20Bridge.sol";
 import { iOVM_L2ERC20Bridge } from "./iOVM_L2ERC20Bridge.sol";
 
 /* Library Imports */
-import { ERC165Checker } from "@openzeppelin/contracts/introspection/ERC165Checker.sol";
+import { ERC165Checker } from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import { OVM_CrossDomainEnabled } from "../../libraries/bridge/OVM_CrossDomainEnabled.sol";
 import { Lib_PredeployAddresses } from "../../libraries/constants/Lib_PredeployAddresses.sol";
 

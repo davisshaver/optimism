@@ -14,7 +14,7 @@ import { iOVM_BondManager } from "../verification/iOVM_BondManager.sol";
 import { iOVM_ChainStorageContainer } from "./iOVM_ChainStorageContainer.sol";
 
 /* External Imports */
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @title OVM_StateCommitmentChain

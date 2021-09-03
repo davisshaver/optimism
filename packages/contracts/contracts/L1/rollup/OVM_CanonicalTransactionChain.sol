@@ -13,7 +13,7 @@ import { iOVM_CanonicalTransactionChain } from "./iOVM_CanonicalTransactionChain
 import { iOVM_ChainStorageContainer } from "./iOVM_ChainStorageContainer.sol";
 
 /* External Imports */
-import { Math } from "@openzeppelin/contracts/math/Math.sol";
+import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
 /**
  * @title OVM_CanonicalTransactionChain
