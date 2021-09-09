@@ -27,4 +27,7 @@ var (
 	ErrInsufficientBalance      = errors.New("insufficient balance for transfer")
 	ErrContractAddressCollision = errors.New("contract address collision")
 	ErrNoCompatibleInterpreter  = errors.New("no compatible interpreter")
+
+	// OVM errors
+	ErrDeployerNotWhitelisted = errors.New("deployer address not whitelisted")
 )

@@ -16,8 +16,7 @@ contract OVM_DeployerWhitelist {
      * Contract Constants *
      **********************/
 
-    bool public initialized;
-    bool public allowArbitraryDeployment;
+    // WARNING: When owner is set to address(0), the whitelist is disabled.
     address public owner;
     mapping (address => bool) public whitelist;
 
@@ -41,26 +40,6 @@ contract OVM_DeployerWhitelist {
     /********************
      * Public Functions *
      ********************/
-
-    /**
-     * Initializes the whitelist.
-     * @param _owner Address of the owner for this contract.
-     * @param _allowArbitraryDeployment Whether or not to allow arbitrary contract deployment.
-     */
-    function initialize(
-        address _owner,
-        bool _allowArbitraryDeployment
-    )
-        external
-    {
-        if (initialized == true) {
-            return;
-        }
-
-        initialized = true;
-        allowArbitraryDeployment = _allowArbitraryDeployment;
-        owner = _owner;
-    }
 
     /**
      * Adds or removes an address from the deployment whitelist.
@@ -87,20 +66,15 @@ contract OVM_DeployerWhitelist {
         public
         onlyOwner
     {
-        owner = _owner;
-    }
+        // Prevent users from setting the whitelist owner to address(0) except via
+        // enableArbitraryContractDeployment. If you want to burn the whitelist owner, send it to any
+        // other address that doesn't have a corresponding knowable private key.
+        require(
+            _owner != address(0),
+            "OVM_DeployerWhitelist: whitelist can only be disabled via enableArbitraryContractDeployment"
+        );
 
-    /**
-     * Updates the arbitrary deployment flag.
-     * @param _allowArbitraryDeployment Whether or not to allow arbitrary contract deployment.
-     */
-    function setAllowArbitraryDeployment(
-        bool _allowArbitraryDeployment
-    )
-        public
-        onlyOwner
-    {
-        allowArbitraryDeployment = _allowArbitraryDeployment;
+        owner = _owner;
     }
 
     /**
@@ -110,8 +84,7 @@ contract OVM_DeployerWhitelist {
         external
         onlyOwner
     {
-        setAllowArbitraryDeployment(true);
-        setOwner(address(0));
+        owner = address(0);
     }
 
     /**
@@ -127,10 +100,6 @@ contract OVM_DeployerWhitelist {
             bool
         )
     {
-        return (
-            initialized == false
-            || allowArbitraryDeployment == true
-            || whitelist[_deployer]
-        );
+        return (owner == address(0) || whitelist[_deployer]);
     }
 }
