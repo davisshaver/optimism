@@ -4,7 +4,6 @@ chai.use(chaiAsPromised)
 
 /* Imports: External */
 import { ethers, BigNumber, Contract, utils } from 'ethers'
-import { TxGasLimit, TxGasPrice } from '@eth-optimism/core-utils'
 import { predeploys, getContractInterface } from '@eth-optimism/contracts'
 
 /* Imports: Internal */
@@ -26,6 +25,23 @@ describe('Fee Payment Integration Tests', async () => {
       env.l2Wallet
     )
   })
+
+  it(`should return eth_gasPrice equal to OVM_GasPriceOracle.gasPrice`, async () => {
+    const assertGasPrice = async () => {
+      const gasPrice = await env.l2Wallet.getGasPrice()
+      const oracleGasPrice = await env.gasPriceOracle.gasPrice()
+      expect(gasPrice).to.deep.equal(oracleGasPrice)
+    }
+
+    assertGasPrice()
+    // update the gas price
+    const tx = await env.gasPriceOracle.setGasPrice(1000)
+    await tx.wait()
+
+    assertGasPrice()
+  })
+
+  // assert that the fee was debited correctly
 
   it('should not be able to withdraw fees before the minimum is met', async () => {
     await expect(ovmSequencerFeeVault.withdraw()).to.be.rejected
